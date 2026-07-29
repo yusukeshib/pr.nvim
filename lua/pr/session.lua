@@ -152,7 +152,7 @@ local function launch(session)
     review_buffer(vim.api.nvim_get_current_buf())
   end
 
-  nvim_tree.open(session.workspace)
+  nvim_tree.open(session.workspace, session.changed_files)
   session.ready = true
   util.notify(("reviewing %s#%d — %s"):format(session.repo, session.number, session.pr.title))
 end
