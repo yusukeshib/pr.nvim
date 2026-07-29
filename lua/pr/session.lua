@@ -135,6 +135,7 @@ local function first_file(session)
 end
 
 local function launch(session)
+  session.ready = false
   state.set(session)
   threads.index(session.threads)
   setup_autocmds(session)
@@ -152,6 +153,7 @@ local function launch(session)
   end
 
   nvim_tree.open(session.workspace)
+  session.ready = true
   util.notify(("reviewing %s#%d — %s"):format(session.repo, session.number, session.pr.title))
 end
 

@@ -37,7 +37,6 @@ function M.open(workspace)
   end
   local source_win = vim.api.nvim_get_current_win()
   api.tree.open({ path = workspace })
-  api.tree.reload()
   if vim.api.nvim_win_is_valid(source_win) then
     vim.api.nvim_set_current_win(source_win)
   end
