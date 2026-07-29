@@ -342,7 +342,6 @@ function M.close()
     pcall(vim.api.nvim_del_augroup_by_id, session.augroup)
   end
   state.clear()
-  nvim_tree.restore(session.launch_root)
 
   if session.tabpage and vim.api.nvim_tabpage_is_valid(session.tabpage) then
     if #vim.api.nvim_list_tabpages() == 1 then
@@ -351,6 +350,8 @@ function M.close()
     vim.api.nvim_set_current_tabpage(session.tabpage)
     vim.cmd.tabclose()
   end
+
+  nvim_tree.restore(session.launch_root)
   util.notify("review closed; cached workspace kept at " .. session.workspace)
 end
 
