@@ -48,21 +48,31 @@ function M.comment_badge(entry)
   return ""
 end
 
-local function open_file(session, entry)
+local function open_file(session, entry, focus, notify_errors)
   if entry.status == "D" then
-    util.notify("deleted-file review is not implemented yet", vim.log.levels.WARN)
-    return
+    if notify_errors then
+      util.notify("deleted-file review is not implemented yet", vim.log.levels.WARN)
+    end
+    return false
   end
   local path = vim.fs.joinpath(session.workspace, entry.path)
   if not vim.uv.fs_stat(path) then
-    util.notify("file does not exist in the PR workspace: " .. entry.path, vim.log.levels.ERROR)
-    return
+    if notify_errors then
+      util.notify("file does not exist in the PR workspace: " .. entry.path, vim.log.levels.ERROR)
+    end
+    return false
   end
   local win = session.content_window
-  if win and vim.api.nvim_win_is_valid(win) then
+  if not win or not vim.api.nvim_win_is_valid(win) then
+    return false
+  end
+  local buf = vim.fn.bufadd(path)
+  vim.fn.bufload(buf)
+  vim.api.nvim_win_set_buf(win, buf)
+  if focus then
     vim.api.nvim_set_current_win(win)
   end
-  vim.cmd("edit " .. vim.fn.fnameescape(path))
+  return true
 end
 
 local function fallback(session, entries)
@@ -73,7 +83,7 @@ local function fallback(session, entries)
     end,
   }, function(entry)
     if entry then
-      open_file(session, entry)
+      open_file(session, entry, true, true)
     end
   end)
 end
@@ -97,13 +107,20 @@ function M.open()
   local entry_display = require("telescope.pickers.entry_display")
   local finders = require("telescope.finders")
   local pickers = require("telescope.pickers")
+  local themes = require("telescope.themes")
   local displayer = entry_display.create({
     separator = " ",
     items = { { width = 1 }, { width = 5 }, { remaining = true } },
   })
 
-  pickers
-    .new({}, {
+  local picker = pickers.new(
+    themes.get_ivy({
+      previewer = false,
+      layout_config = {
+        height = math.min(15, math.max(6, #entries + 2)),
+      },
+    }),
+    {
       prompt_title = ("PR #%d changed files"):format(session.number),
       finder = finders.new_table({
         results = entries,
@@ -126,19 +143,29 @@ function M.open()
         end,
       }),
       sorter = conf.generic_sorter({}),
-      previewer = conf.file_previewer({}),
+      previewer = false,
       attach_mappings = function(prompt_bufnr)
         actions.select_default:replace(function()
           local selection = action_state.get_selected_entry()
           actions.close(prompt_bufnr)
           if selection then
-            open_file(session, selection.value)
+            open_file(session, selection.value, true, true)
           end
         end)
         return true
       end,
-    })
-    :find()
+    }
+  )
+
+  local set_selection = picker.set_selection
+  picker.set_selection = function(self, row)
+    set_selection(self, row)
+    local selection = self:get_selection()
+    if selection then
+      open_file(session, selection.value, false, false)
+    end
+  end
+  picker:find()
 end
 
 return M

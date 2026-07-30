@@ -64,7 +64,7 @@ A bare PR number uses the repository containing the current working directory.
 | `za` | Toggle the unchanged region under the cursor |
 | `zR` / `zM` | Open or close all unchanged regions |
 
-In `:PRFiles`, `●N` means the file has N unresolved review threads and `✓N` means all N threads are resolved.
+`:PRFiles` opens a compact bottom list without a preview pane. Moving the selection updates the source buffer immediately. `●N` means the file has N unresolved review threads and `✓N` means all N threads are resolved.
 
 Unchanged regions are folded by default while preserving three context lines around every Gitsigns hunk. Configure this with `folds.context`, or disable it with `folds.enabled = false`.
 
