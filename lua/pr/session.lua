@@ -1,5 +1,6 @@
 local config = require("pr.config")
 local editor = require("pr.editor")
+local files = require("pr.files")
 local folds = require("pr.folds")
 local github = require("pr.github")
 local nvim_tree = require("pr.nvim_tree")
@@ -113,6 +114,7 @@ local function review_buffer(buf)
   end
 
   local maps = config.options.keymaps
+  vim.keymap.set("n", maps.files, files.open, { buffer = buf, desc = "List PR changed files" })
   vim.keymap.set("n", maps.comment, M.comment, { buffer = buf, desc = "Add GitHub review comment" })
   vim.keymap.set("n", maps.reply, M.reply, { buffer = buf, desc = "Reply to GitHub review thread" })
   vim.keymap.set(

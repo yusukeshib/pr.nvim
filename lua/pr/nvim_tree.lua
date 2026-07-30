@@ -1,33 +1,6 @@
-local state = require("pr.state")
 local util = require("pr.util")
 
 local M = {}
-
-function M.filter(path)
-  local session = state.get()
-  if not session or not session.workspace or not session.changed_set then
-    return false
-  end
-  if not util.is_within(path, session.workspace) then
-    return false
-  end
-
-  local relative = util.relative(path, session.workspace)
-  if not relative or relative == "" then
-    return false
-  end
-  if session.changed_set[relative] then
-    return false
-  end
-
-  local prefix = relative .. "/"
-  for changed_path in pairs(session.changed_set) do
-    if changed_path:sub(1, #prefix) == prefix then
-      return false
-    end
-  end
-  return true
-end
 
 function M.open(workspace, changed_files)
   local ok, api = pcall(require, "nvim-tree.api")

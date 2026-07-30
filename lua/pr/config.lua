@@ -14,6 +14,7 @@ M.defaults = {
     min_lines = 2,
   },
   keymaps = {
+    files = "<leader>pf",
     comment = "gc",
     reply = "gr",
     resolve = "gR",

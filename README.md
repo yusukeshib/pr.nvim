@@ -2,7 +2,7 @@
 
 Read-only GitHub pull request reviews in ordinary Neovim buffers.
 
-The plugin checks a PR out into an isolated workspace, keeps source buffers read-only, uses Gitsigns for the unified diff, folds unchanged regions with three lines of context, renders review threads between source lines, and uses nvim-tree as the changed-file pane. Because reviewed files are real files, LSP navigation and the rest of your normal Neovim workflow remain available.
+The plugin checks a PR out into an isolated workspace, keeps source buffers read-only, uses Gitsigns for the unified diff, folds unchanged regions with three lines of context, and renders review threads between source lines. nvim-tree remains an unfiltered project tree for normal navigation, while `:PRFiles` provides a focused changed-file picker. Because reviewed files are real files, LSP navigation and the rest of your normal Neovim workflow remain available.
 
 ## Status
 
@@ -15,6 +15,7 @@ Early prototype. GitHub.com pull requests with up to 100 review threads are supp
 - `git`
 - `gitsigns.nvim`
 - `nvim-tree.lua`
+- `telescope.nvim` (optional; falls back to `vim.ui.select`)
 
 ## Installation
 
@@ -32,20 +33,7 @@ vim.pack.add({
 require("pr").setup()
 ```
 
-Add the review-aware custom filter to nvim-tree:
-
-```lua
-require("nvim-tree").setup({
-  filters = {
-    custom = function(path)
-      local ok, review = pcall(require, "pr")
-      return ok and review.filter_file(path) or false
-    end,
-  },
-})
-```
-
-During a review the custom filter shows only changed files and their parent directories. Press nvim-tree's default `U` mapping to disable the filter and browse every sibling file.
+nvim-tree is rooted at the isolated PR workspace without filtering, so unchanged sibling files remain available.
 
 ## Commands
 
@@ -55,6 +43,7 @@ During a review the custom filter shows only changed files and their parent dire
 :PROpen https://github.com/owner/repo/pull/123
 :PROpen 123
 
+:PRFiles
 :PRRefresh
 :PRClose
 ```
@@ -65,6 +54,7 @@ A bare PR number uses the repository containing the current working directory.
 
 | Mapping | Action |
 | --- | --- |
+| `<leader>pf` | List changed files and review-thread counts |
 | `gc` | Comment on the current line |
 | `gr` | Reply to the thread on the current line |
 | `gR` | Resolve or unresolve the thread |
@@ -73,6 +63,8 @@ A bare PR number uses the repository containing the current working directory.
 | `<C-s>` | Submit from a comment editor |
 | `za` | Toggle the unchanged region under the cursor |
 | `zR` / `zM` | Open or close all unchanged regions |
+
+In `:PRFiles`, `●N` means the file has N unresolved review threads and `✓N` means all N threads are resolved.
 
 Unchanged regions are folded by default while preserving three context lines around every Gitsigns hunk. Configure this with `folds.context`, or disable it with `folds.enabled = false`.
 

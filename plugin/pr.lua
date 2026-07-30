@@ -24,3 +24,9 @@ vim.api.nvim_create_user_command("PRRefresh", function()
 end, {
   desc = "Refresh GitHub pull request review threads",
 })
+
+vim.api.nvim_create_user_command("PRFiles", function()
+  review.files()
+end, {
+  desc = "List pull request changed files",
+})
