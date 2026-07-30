@@ -2,7 +2,7 @@
 
 Read-only GitHub pull request reviews in ordinary Neovim buffers.
 
-The plugin checks a PR out into an isolated workspace, keeps source buffers read-only, uses Gitsigns for the unified diff, renders review threads between source lines, and uses nvim-tree as the changed-file pane. Because reviewed files are real files, LSP navigation and the rest of your normal Neovim workflow remain available.
+The plugin checks a PR out into an isolated workspace, keeps source buffers read-only, uses Gitsigns for the unified diff, folds unchanged regions with three lines of context, renders review threads between source lines, and uses nvim-tree as the changed-file pane. Because reviewed files are real files, LSP navigation and the rest of your normal Neovim workflow remain available.
 
 ## Status
 
@@ -71,6 +71,10 @@ A bare PR number uses the repository containing the current working directory.
 | `]t` / `[t` | Next or previous thread in the current file |
 | `R` | Refresh review threads |
 | `<C-s>` | Submit from a comment editor |
+| `za` | Toggle the unchanged region under the cursor |
+| `zR` / `zM` | Open or close all unchanged regions |
+
+Unchanged regions are folded by default while preserving three context lines around every Gitsigns hunk. Configure this with `folds.context`, or disable it with `folds.enabled = false`.
 
 ## Design
 

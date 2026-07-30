@@ -8,6 +8,11 @@ M.defaults = {
     show_deleted = true,
     word_diff = true,
   },
+  folds = {
+    enabled = true,
+    context = 3,
+    min_lines = 2,
+  },
   keymaps = {
     comment = "gc",
     reply = "gr",

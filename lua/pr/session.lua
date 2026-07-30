@@ -1,5 +1,6 @@
 local config = require("pr.config")
 local editor = require("pr.editor")
+local folds = require("pr.folds")
 local github = require("pr.github")
 local nvim_tree = require("pr.nvim_tree")
 local state = require("pr.state")
@@ -54,10 +55,44 @@ local function apply_gitsigns(buf)
   if not session or not vim.api.nvim_buf_is_valid(buf) then
     return
   end
+  if not vim.b[buf].gitsigns_status_dict then
+    return
+  end
+  session.gitsigns_base_state = session.gitsigns_base_state or {}
+  local base_state = session.gitsigns_base_state[buf]
+  if base_state == "pending" then
+    return
+  end
+  if base_state == "applied" then
+    folds.refresh(buf)
+    return
+  end
+
+  session.gitsigns_base_state[buf] = "pending"
   with_gitsigns(session, function(gitsigns)
-    vim.api.nvim_buf_call(buf, function()
-      pcall(gitsigns.change_base, session.pr.baseRefOid, false)
-    end)
+    vim.defer_fn(function()
+      if state.get() ~= session or not vim.api.nvim_buf_is_valid(buf) then
+        return
+      end
+      vim.api.nvim_buf_call(buf, function()
+        local ok = pcall(gitsigns.change_base, session.pr.baseRefOid, false, function(err)
+          vim.schedule(function()
+            if state.get() ~= session or not vim.api.nvim_buf_is_valid(buf) then
+              return
+            end
+            if err then
+              session.gitsigns_base_state[buf] = nil
+              return
+            end
+            session.gitsigns_base_state[buf] = "applied"
+            folds.refresh(buf)
+          end)
+        end)
+        if not ok then
+          session.gitsigns_base_state[buf] = nil
+        end
+      end)
+    end, 100)
   end)
 end
 
